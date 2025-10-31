@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phone Login | Attendance App</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f4f7fc;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .login-box {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        width: 320px;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+      }
+
+      button {
+        width: 100%;
+        padding: 10px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #0056b3;
+      }
+
+      h2 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+
+      #recaptcha-container {
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="login-box">
+      <h2>📱 Phone Login</h2>
+
+      <input type="text" id="phone" placeholder="Enter phone number (+91XXXXXXXXXX)" />
+      <div id="recaptcha-container"></div>
+      <button onclick="sendOTP()">Send OTP</button>
+
+      <input type="text" id="otp" placeholder="Enter OTP" />
+      <button onclick="verifyOTP()">Verify OTP</button>
+
+      <p id="message" style="color: green; margin-top: 10px;"></p>
+    </div>
+
+    <script type="module">
+      // Import Firebase SDKs
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+      import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+      // Your Firebase Configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyBIzVR-UNOncGg6I94ZOxzttwJj8CvF1I8",
+        authDomain: "hello-world-df532.firebaseapp.com",
+        projectId: "hello-world-df532",
+        storageBucket: "hello-world-df532.firebasestorage.app",
+        messagingSenderId: "911388387381",
+        appId: "1:911388387381:web:ee5b5682323bbc9ce7297c",
+        measurementId: "G-0EFTKMK3PZ"
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+
+      // Setup reCAPTCHA
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {});
+
+      // Send OTP
+      window.sendOTP = function () {
+        const phoneNumber = document.getElementById("phone").value;
+        const appVerifier = window.recaptchaVerifier;
+
+        if (phoneNumber === "") {
+          alert("Please enter your phone number!");
+          return;
+        }
+
+        signInWithPhoneNumber(auth, phoneNumber, appVerifier)
+          .then((confirmationResult) => {
+            window.confirmationResult = confirmationResult;
+            document.getElementById("message").innerText = "OTP sent successfully ✅";
+          })
+          .catch((error) => {
+            alert("Error: " + error.message);
+          });
+      };
+
+      // Verify OTP
+      window.verifyOTP = function () {
+        const otp = document.getElementById("otp").value;
+
+        if (otp === "") {
+          alert("Please enter the OTP!");
+          return;
+        }
+
+        window.confirmationResult
+          .confirm(otp)
+          .then((result) => {
+            const user = result.user;
+            document.getElementById("message").innerText = "Login successful 🎉";
+            console.log("User details:", user);
+          })
+          .catch((error) => {
+            alert("Invalid OTP ❌");
+          });
+      };
+    </script>
+  </body>
+</html>
